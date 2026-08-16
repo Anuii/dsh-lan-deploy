@@ -1,0 +1,9 @@
+# 容器内执行的文件必须保持 LF（CRLF 会导致 shebang/脚本解析失败）
+*.sh     text eol=lf
+Dockerfile text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+nginx.conf text eol=lf
+.env.example text eol=lf
+.gitignore text eol=lf
+README.md text eol=lf
