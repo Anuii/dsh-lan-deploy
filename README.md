@@ -28,7 +28,7 @@ docker compose up -d    # 完成：构建镜像 → 生成 HTTPS 证书 → 启�
 |---|---|
 | 主机 | Unraid 7.3.2（x86_64，内核 6.18.38-Unraid） |
 | 容器运行时 | Docker Engine + Compose v2 |
-| DSH | `0.1.0-rc.6`（Dockerfile 锁定） |
+| DSH | npm 最新发布版 |
 | 访问端 | Chrome / Edge（局域网 HTTPS） |
 
 > 原理上适用于任意支持 Docker Compose 的 Linux 主机；需要宿主机支持 `network_mode: host` 与容器 `cap_add`（主流 Docker 安装均支持）。
@@ -36,7 +36,7 @@ docker compose up -d    # 完成：构建镜像 → 生成 HTTPS 证书 → 启�
 ## 做了什么
 
 - **一键编排**：单个 `docker-compose.yml` 管理三个服务
-  - `dsh` —— DSH 本体（镜像自动构建，锁定已验证版本 `0.1.0-rc.6`）
+  - `dsh` —— DSH 本体（镜像自动构建，默认安装 npm 最新发布版）
   - `dsh-certgen` —— 一次性服务，自动生成 HTTPS 证书（幂等）
   - `dsh-proxy` —— nginx HTTPS 反代（含 WebSocket 事件通道转发）
 - **局域网开箱即用**：绑定 `0.0.0.0` 后 DSH 自动把本机所有网卡 IP 加入 `/api` 信任名单
@@ -44,7 +44,6 @@ docker compose up -d    # 完成：构建镜像 → 生成 HTTPS 证书 → 启�
 - **Agent 可执行命令**：bwrap 沙箱内运行 bash，支持 `git clone`/`npm install` 等（沙箱不隔离网络，工作区可写）
 - **Tailscale 友好**：`.env` 填域名即可同时放行 Tailscale 访问
 - **数据持久化**：配置/API key/会话存主机数据目录，工作文件存主机共享目录，容器重建不丢
-- **升级可控**：版本锁定 + 无缓存重建一条命令
 
 ## 架构
 
@@ -144,13 +143,9 @@ docker compose down                   # 停止并删除容器（数据保留）
 ```
 .
 ├── docker-compose.yml   # 编排：dsh + dsh-proxy + dsh-certgen
-├── Dockerfile           # DSH 镜像（编译链 + bubblewrap，锁定 0.1.0-rc.6）
+├── Dockerfile           # DSH 镜像（编译链 + bubblewrap）
 ├── entrypoint.sh        # 容器入口（局域网 patch + 信任域名参数）
 ├── nginx.conf           # HTTPS 反代（8443，WebSocket，强制回环）
 ├── .env.example         # 配置模板（复制为 .env）
 └── certs/               # HTTPS 证书（自动生成，不入库）
 ```
-
-## 致谢
-
-- [DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) —— DeepSeek 官方开源 Agent 框架
